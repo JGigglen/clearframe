@@ -22,7 +22,7 @@ User Action (as framed)
 Considering a raise request on the basis of what has already been invested in the role.
 
 Notes
-This is a clean example of sunk-cost reasoning because the causal link is explicit: past investment → decision obligation. The uncertainty about future payoff further strengthens the signal.
+This is a clean example of sunk-cost reasoning because the causal link is explicit: past investment → decision obligation. The uncertainty about future payoff further strengthens the signal. Clearframe intervention: YES
 
 Example 2 — Tradeoff-aware framing
 
@@ -40,7 +40,7 @@ User Action (as framed)
 Examining internal reasoning to determine what factors are influencing the decision.
 
 Notes
-This framing does not commit the fallacy; it probes for it. The bias may be present, but evidence is insufficient to classify it as active without further reasoning statements.
+This framing does not commit the fallacy; it probes for it. The bias may be present, but evidence is insufficient to classify it as active without further reasoning statements. Clearframe intervention: SOFT
 
 Example 3 — Counterfactual framing
 
@@ -58,4 +58,4 @@ User Action (as framed)
 Testing the robustness of the decision under a zero–prior-investment assumption.
 
 Notes
-This framing is specifically designed to avoid sunk-cost reasoning. It treats past investment as irrelevant to the decision logic, which is the correct structural antidote to the bias."
+This framing is specifically designed to avoid sunk-cost reasoning. It treats past investment as irrelevant to the decision logic, which is the correct structural antidote to the bias. Clearframe intervention: NO
