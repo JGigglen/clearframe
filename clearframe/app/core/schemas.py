@@ -1,6 +1,6 @@
 from enum import Enum
-from pydantic import BaseModel, Field
 from typing import Optional, List
+from pydantic import BaseModel, Field
 
 
 class Classification(str, Enum):
@@ -15,6 +15,11 @@ class Intervention(str, Enum):
     NO = "NO"
 
 
+class LLMSuggestion(BaseModel):
+    classification: Classification
+    rationale: str
+
+
 class DecisionExtract(BaseModel):
     core_decision: str = Field(..., min_length=1)
     past_investments: List[str] = Field(default_factory=list)
@@ -25,13 +30,11 @@ class Detection(BaseModel):
     classification: Classification
     reasoning: str
     counterfactual: Optional[str] = None
+    llm_suggestion: Optional[LLMSuggestion] = None
 
-
-from typing import Optional
 
 class EngineOutput(BaseModel):
     extract: Optional[DecisionExtract]
     detection: Detection
-    intervention: Intervention
+    intervention: Optional[Intervention] = None
     intervention_text: Optional[str] = None
-

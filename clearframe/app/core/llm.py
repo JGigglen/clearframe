@@ -1,13 +1,7 @@
-from typing import Protocol, Dict, Any
-
-class LLM(Protocol):
-    def complete_json(self, prompt: str) -> Dict[str, Any]:
-        ...
-
+from typing import Optional
+from .schemas import LLMSuggestion
 
 class NoopLLM:
-    """
-    Placeholder. Returns empty, forcing heuristic behavior.
-    """
-    def complete_json(self, prompt: str) -> Dict[str, Any]:
-        return {}
+    def consult_sunk_cost(self, text: str) -> Optional[LLMSuggestion]:
+        return None
+
