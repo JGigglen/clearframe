@@ -18,19 +18,19 @@ def build_intervention_text(c: Classification, counterfactual: str | None) -> st
     return None
 
 
-def analyze(text: str) -> EngineOutput:
-    if not isinstance(text, str) or not text.strip():
-        extract = extract_decision("")
-        det = Detection(
-            classification=Classification.NO,
-            reasoning="No decision content provided."
-        )
-        return EngineOutput(
-            extract=extract,
-            detection=det,
-            intervention=intervention_for_classification(Classification.NO),
-            intervention_text=None
-        )
+if not isinstance(text, str) or not text.strip():
+    det = Detection(
+        classification=Classification.NO,
+        reasoning="No decision content provided."
+    )
+
+    return EngineOutput(
+        extract=None,
+        detection=det,
+        intervention=intervention_for_classification(Classification.NO),
+        intervention_text=None
+    )
+
 
     extract = extract_decision(text)
 
