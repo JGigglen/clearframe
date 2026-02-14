@@ -98,3 +98,14 @@ def _build_intervention_text(
         )
 
     return None
+def should_consult_llm(signal: float, explain: bool) -> bool:
+    """
+    Returns True only when:
+    - explain mode is on
+    - signal is in ambiguity band
+    """
+
+    if not explain:
+        return False
+
+    return 0.4 <= signal <= 0.6
