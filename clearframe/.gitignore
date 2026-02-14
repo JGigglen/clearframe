@@ -9,3 +9,8 @@ venv/
 # OS junk
 .DS_Store
 Thumbs.db
+
+# Project generated files
+builder/tickets/
+nightly-agent/
+nightly-agent.zip
