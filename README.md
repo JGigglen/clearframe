@@ -1,78 +1,146 @@
 # Clearframe
 
-Clearframe is a system that detects when human reasoning is distorted under pressure
-and reframes decisions before commitment.
+Clearframe is a deterministic reasoning analysis engine that detects when human decisions are influenced by cognitive bias and reframes them before commitment.
 
-## Core Principle
-Clearframe does not give advice.
-It identifies cognitive patterns and presents counterfactual frames.
-The user always decides.
-
-## v0 Scope (Locked)
-- Input: user-submitted decision or reasoning
-- Detects ONE bias only: Sunk Cost Fallacy
-- Explains why the bias may apply
-- Presents one counterfactual framing
-- No recommendations, no enforcement
-
-## Why This Exists
-Humans make predictable reasoning errors under pressure.
-Clearframe acts as decision hygiene, not control.
-
-## Status
-v0 – manual prompt-driven prototype
+It does **not** give advice.  
+It detects patterns and presents counterfactual frames.  
+The human always decides.
 
 ---
 
-## Architecture Update — Conditional LLM Consult Layer
+## Core Principle
 
-Clearframe now supports a gated intelligence layer designed for safe hybrid reasoning.
+Clearframe is decision hygiene, not decision control.
 
-### Design Principle
-LLMs are never used by default.  
+It exists because humans make predictable reasoning errors under pressure.  
+Clearframe identifies those patterns before action is taken.
+
+---
+
+## v0 Scope (Locked)
+
+Current supported capability:
+
+- Input: natural-language reasoning
+- Detects one bias: **Sunk Cost Fallacy**
+- Explains why bias may apply
+- Provides one counterfactual frame
+- Returns structured output
+- Silent mode available
+- No recommendations
+- No enforcement
+- Deterministic by default
+
+---
+
+## Architecture
+
+Clearframe is intentionally built **logic-first, not model-first**.
+
+Input
+↓
+Feature Extraction
+↓
+Heuristic Classifier
+↓
+Signal Strength
+↓
+Conservative Gate
+↓
+Optional LLM Consult
+↓
+Structured Output
+
+---
+
+## Conditional Intelligence Layer
+
+LLMs are never used automatically.
+
 They are consulted only when:
 
 - explain=True
-- signal confidence is within the ambiguity band
+- confidence falls inside ambiguity band
 
-This ensures:
-- deterministic outputs remain fast and reliable
-- no unnecessary LLM cost
-- no hallucination risk during clear cases
+This guarantees:
 
-### Decision Flow
-
-Input
- ↓
-Heuristic Classifier
- ↓
-Signal Strength
- ↓
-Conservative Gate
- ↓
-IF ambiguous AND explain=True
-      → consult LLM
-ELSE
-      → return deterministic result
-
-### Why This Matters
-
-This architecture mirrors production decision systems:
-
-- deterministic logic handles clear cases
-- probabilistic models assist only uncertain ones
-
-This provides:
-- scalability
-- reliability
+- deterministic speed
+- zero hallucination risk in clear cases
+- reduced cost
 - explainability
-- cost control
+- predictable behavior
 
-### Current Status
+LLMs act as advisors — never decision makers.
 
-✔ Deterministic engine complete  
-✔ Explain mode complete  
-✔ Ambiguity consult hook implemented  
-✔ All tests passing  
+---
 
-LLM integration layer currently stubbed for safe development.
+## Execution Loop System
+
+Clearframe now includes a deterministic execution loop.
+
+Ticket → Loop Runner → Engine → Artifact
+
+
+The loop:
+
+- reads ticket files
+- analyzes reasoning
+- writes structured results
+- preserves run history
+- produces reproducible outputs
+
+This is the foundation for autonomous reasoning agents.
+
+---
+
+## Current Status
+
+**v0.1 — Engine Stable**
+
+Completed:
+
+- deterministic engine
+- signal scoring
+- conservative gate
+- schema-validated outputs
+- LLM adapter interface
+- explain mode
+- full test suite
+- execution loop
+- artifact system
+
+All tests passing.
+
+---
+
+## Design Philosophy
+
+Clearframe is built under strict engineering rules:
+
+- deterministic first
+- tests before intelligence
+- scaffolding before automation
+- minimal abstraction
+- modular boundaries
+- conservative outputs
+
+Intelligence is added only after correctness is proven.
+
+---
+
+## Long-Term Direction
+
+Clearframe is being developed as a general reasoning-quality analysis engine capable of:
+
+- detecting cognitive bias
+- auditing reasoning chains
+- evaluating decisions
+- assisting human judgment safely
+
+---
+
+## Author
+
+JGigglen
+
+
