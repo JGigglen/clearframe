@@ -1,7 +1,13 @@
-from typing import Optional
-from .schemas import LLMSuggestion
+from __future__ import annotations
 
-class NoopLLM:
-    def consult_sunk_cost(self, text: str) -> Optional[LLMSuggestion]:
-        return None
+
+class LLMClient:
+    def consult_sunk_cost(self, text: str) -> str:
+        return ""
+
+
+class MockLLMClient:
+    def consult_sunk_cost(self, text: str) -> str:
+        return "Mock LLM response"
+
 
