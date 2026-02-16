@@ -1,7 +1,7 @@
 from __future__ import annotations
 import json
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import List
 
 @dataclass(frozen=True)
@@ -10,6 +10,9 @@ class Step:
     description: str
     status: str = "pending"
     output: str = ""
+
+    def to_dict(self):
+        return asdict(self)
 
 @dataclass(frozen=True)
 class Plan:
@@ -23,10 +26,7 @@ class Ticket:
     body: str
 
 def load_ticket(path: Path) -> Ticket:
-    """
-    Constitutional Rule: Scaffolding before Automation.
-    Standardized loader to ensure tickets are read deterministically.
-    """
+    """Standardized loader to ensure tickets are read deterministically."""
     data = json.loads(path.read_text(encoding="utf-8"))
     return Ticket(
         ticket_id=str(data.get("id", path.stem)),
@@ -35,15 +35,10 @@ def load_ticket(path: Path) -> Ticket:
     )
 
 def build_plan(ticket: Ticket) -> Plan:
-    """
-    Splits the ticket body into executable steps.
-    If the body is natural language, the Loop (runner) will intercept 
-    and consult Gemini instead of using these lines as literal commands.
-    """
+    """Splits the ticket body into executable steps."""
     body_text = ticket.body or ""
     lines = [line.strip() for line in body_text.splitlines() if line.strip()]
     
-    # If no lines exist, provide a default 'no-op' step
     if not lines:
         lines = ["No instructions provided"]
 

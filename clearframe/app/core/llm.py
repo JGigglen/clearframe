@@ -1,40 +1,17 @@
-from __future__ import annotations
-
 import os
+import json
 from abc import ABC, abstractmethod
-from typing import Optional
-
 
 class LLMClient(ABC):
-    """
-    Provider-agnostic LLM interface.
-    The Engine never knows which provider is used.
-    """
-
     @abstractmethod
     def consult_sunk_cost(self, text: str) -> str:
-        """
-        Returns reasoning string only.
-        Must never raise.
-        """
-        raise NotImplementedError
+        pass
 
-
-# ------------------------------------------------------------------
-# Mock Client (Deterministic Fallback)
-# ------------------------------------------------------------------
-
-class MockLLMClient(LLMClient):
-    def consult_sunk_cost(self, text: str) -> str:
-        return "Mock analysis: possible sunk cost reasoning detected."
-
-
-# ------------------------------------------------------------------
-# Gemini Client (Google) - YOUR NEW ADDITION
-# ------------------------------------------------------------------
+    @abstractmethod
+    def reframe_sunk_cost(self, engine_data: dict) -> dict:
+        pass
 
 class GeminiClient(LLMClient):
-    # Constitutional Rule: Use the proven, stable model version
     def __init__(self, model_name: str = "gemini-2.5-flash"):
         import google.generativeai as genai
         api_key = os.getenv("GOOGLE_API_KEY")
@@ -46,59 +23,48 @@ class GeminiClient(LLMClient):
 
     def consult_sunk_cost(self, text: str) -> str:
         if not self.model:
-            return "LLM_ERROR: GOOGLE_API_KEY not set in environment."
+            return "LLM_ERROR: No API key found."
         try:
-            # Temperature 0 for deterministic reasoning
             response = self.model.generate_content(
-                f"Analyze the following text for sunk cost reasoning. Be concise:\n\n{text}",
-                generation_config={"temperature": 0}
+                f"Analyze the following text for sunk-cost bias. Explain why or why not: {text}"
             )
-            return response.text.strip()
+            return response.text
         except Exception as e:
             return f"LLM_ERROR: {str(e)}"
 
+    def reframe_sunk_cost(self, engine_data: dict) -> dict:
+        if not self.model:
+            return {"counterfactual": None, "rationale": "No API key."}
+        
+        prompt = (
+            "You are ClearframeReframe. Goal: produce a single counterfactual frame for sunk-cost bias.\n"
+            "Rules:\n"
+            "- Do NOT give advice. Do NOT recommend actions. Do NOT moralize.\n"
+            "- Output MUST be valid JSON only.\n"
+            "- Ensure the JSON keys are exactly 'counterfactual' and 'rationale' (lowercase).\n"
+            "- Provide exactly ONE counterfactual question < 25 words.\n"
+            "- The question must remove past investment from the reasoning.\n"
+            f"\nInput JSON: {json.dumps(engine_data)}"
+        )
 
-# ------------------------------------------------------------------
-# OpenAI Client
-# ------------------------------------------------------------------
-
-class OpenAIClient(LLMClient):
-    def __init__(self, model: str = "gpt-4o-mini"):
-        from openai import OpenAI
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        self.model = model
-
-    def consult_sunk_cost(self, text: str) -> str:
         try:
-            resp = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "Analyze for sunk cost reasoning."},
-                    {"role": "user", "content": text},
-                ],
-                temperature=0,
+            response = self.model.generate_content(
+                prompt,
+                generation_config={"response_mime_type": "application/json"}
             )
-            return resp.choices[0].message.content.strip()
+            return json.loads(response.text)
         except Exception as e:
-            return f"LLM_ERROR: {e}"
+            return {"counterfactual": None, "rationale": f"Reframer Error: {str(e)}"}
 
+class MockClient(LLMClient):
+    def consult_sunk_cost(self, text: str) -> str:
+        return "MOCK_ANALYSIS: Sunk cost detected (Simulated)."
+    
+    def reframe_sunk_cost(self, engine_data: dict) -> dict:
+        return {"counterfactual": "MOCK: If today was day one, would you start?", "rationale": "Mock output."}
 
-# ------------------------------------------------------------------
-# Factory
-# ------------------------------------------------------------------
-
-def get_llm(provider: Optional[str] = None) -> LLMClient:
-    """
-    Environment-driven provider selection.
-    Set CLEARFRAME_LLM_PROVIDER=gemini | openai | anthropic | mock
-    """
-
-    provider = provider or os.getenv("CLEARFRAME_LLM_PROVIDER", "mock").lower()
-
+def get_llm():
+    provider = os.getenv("CLEARFRAME_LLM_PROVIDER", "mock").lower()
     if provider == "gemini":
         return GeminiClient()
-
-    if provider == "openai":
-        return OpenAIClient()
-
-    # Fallback to Mock if nothing
+    return MockClient()

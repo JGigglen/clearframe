@@ -1,12 +1,3 @@
-from __future__ import annotations
-import json
-from pathlib import Path
-
-def show_last_run(runs_dir: Path) -> None:
-    # 1. Find all subfolders in the runs directory
-    # These are named like 20260216T...
-    folders = [d for d in runs_dir.iterdir() if d.is_dir()]
-    
 import json
 from pathlib import Path
 
@@ -17,7 +8,6 @@ def show_last_run(runs_dir: Path):
         return
 
     latest_run = folders[-1]
-    # Find the execution JSON file
     exec_files = list(latest_run.glob("*.execution.json"))
     if not exec_files:
         print(f"No execution artifact in {latest_run.name}")
@@ -34,14 +24,9 @@ def show_last_run(runs_dir: Path):
         status_icon = "✅" if step.get("status") == "completed" else "❌"
         print(f" {status_icon} {step.get('description')}")
         
-        # --- THE FIX: Print the Brain's Output ---
         output = step.get("output")
         if output:
-            # Indent and wrap the output for readability
-            print(f"\n   🧠 ANALYSIS:\n   {output}\n")
+            print(f"\n   🧠 BRAIN OUTPUT:\n   {output}\n")
             print("─"*40)
 
-    print("═"*40 + "\n")    
-
-
-      
+    print("═"*40 + "\n")
