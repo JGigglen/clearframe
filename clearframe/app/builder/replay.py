@@ -7,39 +7,41 @@ def show_last_run(runs_dir: Path) -> None:
     # These are named like 20260216T...
     folders = [d for d in runs_dir.iterdir() if d.is_dir()]
     
+import json
+from pathlib import Path
+
+def show_last_run(runs_dir: Path):
+    folders = sorted([d for d in runs_dir.iterdir() if d.is_dir()])
     if not folders:
-        print("No run folders found.")
+        print("No runs found.")
         return
 
-    # 2. Sort folders by name (since they are timestamped, the last is the newest)
-    # This is more reliable than the index.json for local testing
-    latest_folder = sorted(folders)[-1]
-    
-    # 3. Find the execution artifact inside that folder
-    artifact_files = list(latest_folder.glob("*.execution.json"))
-
-    if not artifact_files:
-        print(f"No artifact found in the newest folder: {latest_folder.name}")
+    latest_run = folders[-1]
+    # Find the execution JSON file
+    exec_files = list(latest_run.glob("*.execution.json"))
+    if not exec_files:
+        print(f"No execution artifact in {latest_run.name}")
         return
 
-    # 4. Show the most recent file found in that folder
-    # Sort these too, just in case there are multiple (like T1 and T2)
-    latest_artifact = sorted(artifact_files, key=lambda p: p.stat().st_mtime)[-1]
-    details = json.loads(latest_artifact.read_text(encoding="utf-8"))
+    data = json.loads(exec_files[0].read_text(encoding="utf-8"))
 
     print("\n" + "═"*40)
-    print(f" 📺 REPLAYING RUN: {details.get('ticket_id', 'Unknown')}")
-    print(f" Status: {details.get('status')}")
-    print("─" * 40)
-    
-    for step in details.get("steps", []):
-        status = step.get("status", "pending")
-        # Now we handle the 'failed' status visually
-        icon = "✅" if status in ["done", "completed"] else "❌" if status == "failed" else "⏳"
-        print(f" {icon} Step {step.get('id')}: {step.get('description')}")
+    print(f" 📺 REPLAYING RUN: {data.get('ticket_id')}")
+    print(f" Status: {data.get('status')}")
+    print("─"*40)
+
+    for step in data.get("steps", []):
+        status_icon = "✅" if step.get("status") == "completed" else "❌"
+        print(f" {status_icon} {step.get('description')}")
         
-        # If it failed, show why!
-        if status == "failed":
-            print(f"    ⚠️  Error: {step.get('output', 'Unknown error')}")
-    
-    print("═"*40 + "\n")
+        # --- THE FIX: Print the Brain's Output ---
+        output = step.get("output")
+        if output:
+            # Indent and wrap the output for readability
+            print(f"\n   🧠 ANALYSIS:\n   {output}\n")
+            print("─"*40)
+
+    print("═"*40 + "\n")    
+
+
+      

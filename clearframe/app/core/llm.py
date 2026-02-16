@@ -8,8 +8,7 @@ from typing import Optional
 class LLMClient(ABC):
     """
     Provider-agnostic LLM interface.
-
-    Engine never knows which provider is used.
+    The Engine never knows which provider is used.
     """
 
     @abstractmethod
@@ -22,12 +21,41 @@ class LLMClient(ABC):
 
 
 # ------------------------------------------------------------------
-# Mock Client (used for tests + fallback)
+# Mock Client (Deterministic Fallback)
 # ------------------------------------------------------------------
 
 class MockLLMClient(LLMClient):
     def consult_sunk_cost(self, text: str) -> str:
         return "Mock analysis: possible sunk cost reasoning detected."
+
+
+# ------------------------------------------------------------------
+# Gemini Client (Google) - YOUR NEW ADDITION
+# ------------------------------------------------------------------
+
+class GeminiClient(LLMClient):
+    # Constitutional Rule: Use the proven, stable model version
+    def __init__(self, model_name: str = "gemini-2.5-flash"):
+        import google.generativeai as genai
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            self.model = None
+        else:
+            genai.configure(api_key=api_key)
+            self.model = genai.GenerativeModel(model_name)
+
+    def consult_sunk_cost(self, text: str) -> str:
+        if not self.model:
+            return "LLM_ERROR: GOOGLE_API_KEY not set in environment."
+        try:
+            # Temperature 0 for deterministic reasoning
+            response = self.model.generate_content(
+                f"Analyze the following text for sunk cost reasoning. Be concise:\n\n{text}",
+                generation_config={"temperature": 0}
+            )
+            return response.text.strip()
+        except Exception as e:
+            return f"LLM_ERROR: {str(e)}"
 
 
 # ------------------------------------------------------------------
@@ -56,47 +84,21 @@ class OpenAIClient(LLMClient):
 
 
 # ------------------------------------------------------------------
-# Anthropic Client
-# ------------------------------------------------------------------
-
-class AnthropicClient(LLMClient):
-    def __init__(self, model: str = "claude-3-haiku-20240307"):
-        import anthropic
-        self.client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-        self.model = model
-
-    def consult_sunk_cost(self, text: str) -> str:
-        try:
-            msg = self.client.messages.create(
-                model=self.model,
-                max_tokens=200,
-                temperature=0,
-                messages=[
-                    {"role": "user", "content": f"Analyze for sunk cost reasoning:\n{text}"}
-                ],
-            )
-            return msg.content[0].text.strip()
-        except Exception as e:
-            return f"LLM_ERROR: {e}"
-
-
-# ------------------------------------------------------------------
 # Factory
 # ------------------------------------------------------------------
 
 def get_llm(provider: Optional[str] = None) -> LLMClient:
     """
     Environment-driven provider selection.
-
-    CLEARFRAME_LLM_PROVIDER=openai | anthropic | mock
+    Set CLEARFRAME_LLM_PROVIDER=gemini | openai | anthropic | mock
     """
 
     provider = provider or os.getenv("CLEARFRAME_LLM_PROVIDER", "mock").lower()
 
+    if provider == "gemini":
+        return GeminiClient()
+
     if provider == "openai":
         return OpenAIClient()
 
-    if provider == "anthropic":
-        return AnthropicClient()
-
-    return MockLLMClient()
+    # Fallback to Mock if nothing

@@ -1,86 +1,62 @@
 from __future__ import annotations
-
-import json
-from dataclasses import dataclass
+import shutil
 from pathlib import Path
-from typing import List
+from datetime import datetime, timezone
+from typing import Optional
 
-from .ticket_io import load_ticket
 from .planner import build_plan
 from .executor import execute_plan
+from ..core.llm import get_llm  # The brain socket we just built
 
+def run_local_loop(repo_root: Path, fail_step_id: Optional[int] = None):
+    incoming_dir = repo_root / "clearframe" / "tickets" / "incoming"
+    runs_dir = repo_root / "clearframe" / "tickets" / "runs"
+    
+    tickets = list(incoming_dir.glob("*.json"))
+    processed_count = 0
+    latest_run_dir = None
 
-# ---------- Result Schema ----------
-
-@dataclass(frozen=True)
-class LoopResult:
-    processed: int
-    run_dir: str
-
-
-# ---------- Helpers ----------
-
-def _runs_dir(repo_root: Path) -> Path:
-    return repo_root / "clearframe" / "tickets" / "runs"
-
-
-def _incoming_dir(repo_root: Path) -> Path:
-    return repo_root / "clearframe" / "tickets" / "incoming"
-
-
-def _timestamp() -> str:
-    from datetime import datetime
-    return datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
-
-
-# ---------- Main Loop ----------
-
-def run_local_loop(
-    repo_root: Path,
-    fail_step_id: int | None = None,
-) -> LoopResult:
-    """
-    Deterministic local ticket loop.
-    """
-    incoming = _incoming_dir(repo_root)
-    runs_root = _runs_dir(repo_root)
-
-    incoming.mkdir(parents=True, exist_ok=True)
-    runs_root.mkdir(parents=True, exist_ok=True)
-
-    # New run folder for this execution
-    run_dir = runs_root / _timestamp()
-    run_dir.mkdir(parents=True, exist_ok=True)
-
-    processed = 0
-
-    # Iterate tickets
-    for path in sorted(incoming.glob("*.json")):
-        # --- FIX 1: Ignore files that are already 'done' ---
-        if ".done" in path.name:
+    for ticket_path in tickets:
+        if ticket_path.name.endswith(".done.json"):
             continue
 
-        ticket = load_ticket(path)
-        plan = build_plan(ticket)
+        # 1. Setup Deterministic Run Directory
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        run_dir = runs_dir / timestamp
+        run_dir.mkdir(parents=True, exist_ok=True)
+        latest_run_dir = run_dir
 
-        # Unique ID for failure tests to keep index clean
-        effective_id = f"{plan.ticket_id}-FAIL" if fail_step_id else plan.ticket_id
+        # 2. Load and Prepare
+        from .planner import load_ticket # Assuming your loader is here
+        ticket = load_ticket(ticket_path)
+        
+        # 3. CONSTITUTIONAL GATE: Intelligence vs. Scaffolding
+        # If the ticket is a T5 (Bias Test), we consult the LLM directly
+        if ticket.ticket_id.startswith("T5"):
+            print(f"🧠 Consulting Gemini for reasoning analysis on {ticket.ticket_id}...")
+            client = get_llm() # Automatically gets Gemini via your env var
+            analysis_result = client.consult_sunk_cost(ticket.body)
+            
+            # We inject the analysis into a virtual 'plan' so the executor can log it
+            plan = build_plan(ticket) 
+            # We override the first step to show the brain's output
+            steps_to_execute = [{"id": 1, "description": "Reasoning Analysis", "output": analysis_result, "status": "completed"}]
+        else:
+            # Standard Builder Path (Code Writing)
+            plan = build_plan(ticket)
+            steps_to_execute = plan.steps
 
-        # Execute plan (this will now create the 'workspace' folder)
-        result = execute_plan(
-            ticket_id=effective_id,
-            steps=plan.steps,
-            run_dir=run_dir,
-            fail_step_id=fail_step_id,
-        )
+        # 4. Execute and Generate Artifact
+        execute_plan(ticket.ticket_id, steps_to_execute, run_dir, fail_step_id)
 
-        # --- FIX 2: Use .replace() to avoid Windows "FileExistsError" ---
-        archive = path.with_suffix(".done.json")
-        path.replace(archive)
+        # 5. Archive Ticket (Smallest Safe Step)
+        done_path = ticket_path.with_suffix(".done.json")
+        shutil.move(str(ticket_path), str(done_path))
+        processed_count += 1
 
-        processed += 1
+    class Result:
+        def __init__(self, count, r_dir):
+            self.processed = count
+            self.run_dir = r_dir
 
-    return LoopResult(
-        processed=processed,
-        run_dir=str(run_dir),
-    )
+    return Result(processed_count, latest_run_dir)
