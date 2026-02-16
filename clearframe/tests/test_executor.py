@@ -20,4 +20,5 @@ def test_execute_plan_creates_artifact(tmp_path: Path):
 
     assert result.step_count == 2
     assert Path(result.artifact_path).exists()
+    assert result.failed is False
 
