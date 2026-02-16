@@ -1,33 +1,33 @@
 from .schemas import Classification, Intervention
 
-def intervention_for_classification(c: Classification) -> Intervention:
-    if c == Classification.YES:
-        return Intervention.YES
-    if c == Classification.POSSIBLY:
-        return Intervention.SOFT
-    return Intervention.NO
 
-
-def conservative_gate(signal: float, model_class: Classification) -> Classification:
+def conservative_gate(signal: float, base: Classification) -> Classification:
     """
-    Gate is the final authority.
-    Silence-first, but hedges on disagreement.
+    Final authority gate.
+    Conservative bias: silence when weak evidence.
     """
 
-    # Weak signal: silence
+    # very weak evidence → NO
     if signal < 0.35:
         return Classification.NO
 
-    # Strong heuristic, model says NO → hedge
-    if signal >= 0.75 and model_class == Classification.NO:
-        return Classification.POSSIBLY
+    # strong evidence → YES
+    if signal >= 0.85:
+        return Classification.YES
 
-    # Moderate signal cannot support YES
-    if signal < 0.65 and model_class == Classification.YES:
-        return Classification.POSSIBLY
+    # otherwise trust heuristic
+    return base
 
-    # Moderate POSSIBLY still downgraded
-    if signal < 0.50 and model_class == Classification.POSSIBLY:
-        return Classification.NO
 
-    return model_class
+def intervention_for_classification(c: Classification) -> Intervention | None:
+    """
+    Maps classification → intervention type
+    """
+
+    if c == Classification.YES:
+        return Intervention.YES
+
+    if c == Classification.POSSIBLY:
+        return Intervention.SOFT
+
+    return None

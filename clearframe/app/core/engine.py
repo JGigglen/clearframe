@@ -54,8 +54,11 @@ def analyze(
     if config is None:
         config = EngineConfig()
 
+    from .llm import get_llm
+
     if llm is None:
-        llm = MockLLMClient()
+        llm = get_llm()
+
 
     # -------------------------
     # Guard: empty input

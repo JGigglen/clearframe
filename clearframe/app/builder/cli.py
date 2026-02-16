@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 from .loop import run_local_loop
+from .replay import show_last_run
 
 
 def _repo_root_from_here() -> Path:
@@ -18,6 +19,9 @@ def main(argv: list[str] | None = None) -> int:
     run_p = sub.add_parser("run")
     run_p.add_argument("--repo-root", default=None)
 
+    # 1. Add subcommand (from screenshot)
+    sub.add_parser("replay", help="Show last run summary.")
+
     args = parser.parse_args(argv)
 
     if args.cmd == "run":
@@ -25,6 +29,13 @@ def main(argv: list[str] | None = None) -> int:
         result = run_local_loop(repo_root)
         print(f"processed={result.processed}")
         print(f"run_dir={result.run_dir}")
+        return 0
+
+    # 2. Inside command handler (from screenshot)
+    elif args.cmd == "replay":
+        repo_root = _repo_root_from_here()
+        runs_dir = repo_root / "clearframe" / "tickets" / "runs"
+        show_last_run(runs_dir)
         return 0
 
     return 2
