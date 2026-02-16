@@ -1,0 +1,18 @@
+{
+  "ticket_id": "T5-BIAS",
+  "status": "DRY_RUN",
+  "workspace_path": "C:\\Users\\Giggles\\Desktop\\clearframe\\clearframe\\tickets\\runs\\20260216T044158Z\\workspace",
+  "steps": [
+    {
+      "id": 1,
+      "description": "I have spent $50,000 on this software project over the last six months. It isn't working and the market has changed, but I can't quit now or all that money and time will be wasted. I need to spend another $20,000 to finish it.",
+      "status": "completed"
+    }
+  ],
+  "meta": {
+    "timestamp_utc": "2026-02-16T04:41:58.599647+00:00",
+    "python_version": "3.11.0 (main, Oct 24 2022, 18:13:38) [MSC v.1933 32 bit (Intel)]",
+    "platform": "Windows-10-10.0.26100-SP0",
+    "simulated_failure": false
+  }
+}

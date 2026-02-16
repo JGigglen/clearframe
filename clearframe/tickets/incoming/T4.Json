@@ -1,5 +1,0 @@
-{
-    "id": "T4",
-    "title": "Code Writing Test",
-    "body": "write app/main.py: print('Hello from the Clearframe Sandbox!')\nwrite VERSION.txt: 1.0.0-alpha"
-  }

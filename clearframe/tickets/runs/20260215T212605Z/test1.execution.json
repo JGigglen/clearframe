@@ -1,0 +1,22 @@
+{
+  "ticket_id": "test1",
+  "status": "DRY_RUN",
+  "steps": [
+    {
+      "id": 1,
+      "description": "Validate ticket structure"
+    },
+    {
+      "id": 2,
+      "description": "Analyze request"
+    },
+    {
+      "id": 3,
+      "description": "Select execution strategy"
+    },
+    {
+      "id": 4,
+      "description": "Prepare output artifact"
+    }
+  ]
+}

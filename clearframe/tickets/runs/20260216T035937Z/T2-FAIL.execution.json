@@ -1,0 +1,23 @@
+{
+  "ticket_id": "T2-FAIL",
+  "status": "DRY_RUN_FAILED",
+  "steps": [
+    {
+      "id": 1,
+      "description": "Validate ticket structure",
+      "status": "completed"
+    },
+    {
+      "id": 2,
+      "description": "Analyze request",
+      "status": "failed",
+      "output": "Simulated failure at Step 2 (requested via CLI)"
+    }
+  ],
+  "meta": {
+    "timestamp_utc": "2026-02-16T03:59:37.107580+00:00",
+    "python_version": "3.11.0 (main, Oct 24 2022, 18:13:38) [MSC v.1933 32 bit (Intel)]",
+    "platform": "Windows-10-10.0.26100-SP0",
+    "simulated_failure": true
+  }
+}
