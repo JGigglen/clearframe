@@ -1,7 +1,0 @@
-{
-  "body": "I should keep going because I've already spent months on this.",
-  "id": "test1",
-  "result": "extract=DecisionExtract(core_decision=\"I should keep going because I've already spent months on this\", past_investments=['User references past investment.'], proposed_next_action=None) detection=Detection(classification=<Classification.POSSIBLY: 'POSSIBLY'>, reasoning='Some sunk cost indicators detected but not decisive.', counterfactual=None, llm_suggestion=LLMSuggestion(classification=<Classification.POSSIBLY: 'POSSIBLY'>, rationale='Mock LLM response')) intervention=<Intervention.SOFT: 'SOFT'> intervention_text=None",
-  "status": "processed",
-  "title": "Test Decision"
-}
