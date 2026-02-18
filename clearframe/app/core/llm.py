@@ -4,11 +4,11 @@ from abc import ABC, abstractmethod
 
 class LLMClient(ABC):
     @abstractmethod
-    def consult_sunk_cost(self, text: str) -> str:
+    def analyze_bias(self, text: str, bias_type: str) -> str:
         pass
 
     @abstractmethod
-    def reframe_sunk_cost(self, engine_data: dict) -> dict:
+    def generate_reframe(self, engine_data: dict) -> dict:
         pass
 
 class GeminiClient(LLMClient):
@@ -21,30 +21,44 @@ class GeminiClient(LLMClient):
             genai.configure(api_key=api_key)
             self.model = genai.GenerativeModel(model_name)
 
-    def consult_sunk_cost(self, text: str) -> str:
-        if not self.model:
-            return "LLM_ERROR: No API key found."
+    def analyze_bias(self, text: str, bias_type: str) -> str:
+        """Narrative analysis specialized by bias type."""
+        if not self.model: return "LLM_ERROR: No API key."
+        
+        prompts = {
+            "SUNK_COST": f"Analyze this text for Sunk-Cost Fallacy (continuing failing effort due to past investment): {text}",
+            "CONFIRMATION_BIAS": f"Analyze this text for Confirmation Bias (seeking info that confirms pre-existing beliefs while ignoring contradictions): {text}",
+            "UNKNOWN": f"Analyze this text for general cognitive bias or logical fallacies: {text}"
+        }
+        
+        prompt = prompts.get(bias_type, prompts["UNKNOWN"])
         try:
-            response = self.model.generate_content(
-                f"Analyze the following text for sunk-cost bias. Explain why or why not: {text}"
-            )
+            response = self.model.generate_content(prompt)
             return response.text
         except Exception as e:
             return f"LLM_ERROR: {str(e)}"
 
-    def reframe_sunk_cost(self, engine_data: dict) -> dict:
-        if not self.model:
-            return {"counterfactual": None, "rationale": "No API key."}
+    def generate_reframe(self, engine_data: dict) -> dict:
+        """The 'Clearframe' move: JSON-only counterfactual generation."""
+        if not self.model: return {"counterfactual": None, "rationale": "No API key."}
         
+        bias_type = engine_data.get("bias_context", "SUNK_COST")
+        text = engine_data.get("text", "")
+
+        # Specialized instructions per bias
+        reframer_rules = {
+            "SUNK_COST": "Remove all past investment (time/money) from the choice. Focus only on future cost vs future benefit.",
+            "CONFIRMATION_BIAS": "Create a frame that forces the user to argue for the OPPOSITE of their current conclusion."
+        }
+        
+        rule = reframer_rules.get(bias_type, "Create a neutral counterfactual that challenges the primary assumption.")
+
         prompt = (
-            "You are ClearframeReframe. Goal: produce a single counterfactual frame for sunk-cost bias.\n"
-            "Rules:\n"
-            "- Do NOT give advice. Do NOT recommend actions. Do NOT moralize.\n"
-            "- Output MUST be valid JSON only.\n"
-            "- Ensure the JSON keys are exactly 'counterfactual' and 'rationale' (lowercase).\n"
-            "- Provide exactly ONE counterfactual question < 25 words.\n"
-            "- The question must remove past investment from the reasoning.\n"
-            f"\nInput JSON: {json.dumps(engine_data)}"
+            f"You are ClearframeReframe for {bias_type}. Output valid JSON ONLY.\n"
+            f"Rule: {rule}\n"
+            "- Exactly ONE question < 25 words.\n"
+            "- Keys: 'counterfactual', 'rationale' (lowercase).\n"
+            f"Input: {text}"
         )
 
         try:
@@ -56,15 +70,11 @@ class GeminiClient(LLMClient):
         except Exception as e:
             return {"counterfactual": None, "rationale": f"Reframer Error: {str(e)}"}
 
-class MockClient(LLMClient):
-    def consult_sunk_cost(self, text: str) -> str:
-        return "MOCK_ANALYSIS: Sunk cost detected (Simulated)."
-    
-    def reframe_sunk_cost(self, engine_data: dict) -> dict:
-        return {"counterfactual": "MOCK: If today was day one, would you start?", "rationale": "Mock output."}
-
 def get_llm():
-    provider = os.getenv("CLEARFRAME_LLM_PROVIDER", "mock").lower()
-    if provider == "gemini":
+    if os.getenv("CLEARFRAME_LLM_PROVIDER") == "gemini":
         return GeminiClient()
     return MockClient()
+
+class MockClient(LLMClient):
+    def analyze_bias(self, text, bias_type): return f"MOCK: {bias_type} detected."
+    def generate_reframe(self, data): return {"counterfactual": "Mock?", "rationale": "Mock."}

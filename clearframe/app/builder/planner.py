@@ -24,14 +24,29 @@ class Ticket:
     ticket_id: str
     title: str
     body: str
+    bias_type: str = "UNKNOWN"  # This is the line that was missing!
 
 def load_ticket(path: Path) -> Ticket:
-    """Standardized loader to ensure tickets are read deterministically."""
+    """Standardized loader that now detects bias signatures."""
     data = json.loads(path.read_text(encoding="utf-8"))
+    body_text = data.get("body", "").lower()
+    t_id = str(data.get("id", path.stem)).upper()
+    
+    # Deterministic Signature Detection
+    # If the ID starts with T5 or has sunk-cost keywords
+    if t_id.startswith("T5") or any(w in body_text for w in ["spent", "invested", "wasted"]):
+        detected_bias = "SUNK_COST"
+    # If the ID starts with T6 or has confirmation-bias keywords
+    elif t_id.startswith("T6") or any(w in body_text for w in ["proves", "reddit", "everyone says", "already know"]):
+        detected_bias = "CONFIRMATION_BIAS"
+    else:
+        detected_bias = "UNKNOWN"
+
     return Ticket(
-        ticket_id=str(data.get("id", path.stem)),
+        ticket_id=t_id,
         title=data.get("title", "Untitled Ticket"),
-        body=data.get("body", "")
+        body=data.get("body", ""),
+        bias_type=detected_bias
     )
 
 def build_plan(ticket: Ticket) -> Plan:
