@@ -1,4 +1,4 @@
-# Clearframe (v0.1.1)
+# ⚖️ Clearframe (v0.2.2)
 ### The Deterministic Reasoning Analysis Engine
 
 Clearframe is a specialized framework designed to bridge the gap between deterministic software execution and probabilistic machine reasoning. It detects when human decisions are influenced by cognitive biases and generates counterfactual frames to reset perspective before a commitment is made.
@@ -7,7 +7,8 @@ Clearframe is a specialized framework designed to bridge the gap between determi
 > 1. Clearframe is decision hygiene, not decision control.
 > 2. It does **not** give advice. It does **not** recommend actions.
 > 3. It identifies patterns and presents mirrors.
-> 4. The human always decides.
+> 4. **Silence-First:** If signal strength is < 0.3, the engine remains silent.
+> 5. The human always decides.
 
 [Image of a software architecture diagram showing the separation between a deterministic logic layer and an LLM reasoning layer]
 
@@ -17,73 +18,66 @@ Clearframe is a specialized framework designed to bridge the gap between determi
 
 Unlike typical AI "wrappers," Clearframe treats the LLM as a modular advisory component, not the core controller. The system follows a strict linear pipeline:
 
-1.  **Ticket Ingestion:** Raw JSON inputs are parsed for structural integrity.
-2.  **Prefix Routing:** The system identifies the "Intent" via prefixes (e.g., `T5-` for Reasoning Analysis).
-3.  **Heuristic Filtering:** Signal strength is measured. If a bias is detected with high confidence by deterministic rules, the system acts immediately.
-4.  **Conditional Intelligence (LLM Consult):** Only when deep semantic analysis is required does the engine consult **Gemini 2.5 Flash**.
+1.  **Ticket Ingestion:** Raw JSON inputs are parsed with defensive error handling (v0.2.2).
+2.  **Weighted Election:** The engine calculates keyword density across multiple bias signatures simultaneously.
+3.  **The Constitutional Gate:** Signal strength is measured. If the "Silence" threshold is met, the engine acts.
+4.  **Conditional Intelligence (LLM Consult):** The engine consults **Gemini 2026 Standard** using a unified `analyze_bias` contract.
 5.  **Structured Artifact Generation:** Results are saved in immutable JSON run-logs for total auditability.
 
 ---
 
-## 🧠 v0 Scope: Sunk Cost Detection & Reframing
+## 🧠 v0.2 Scope: Multi-Bias Detection & Reframing
 
-For the v0 release, Clearframe is hyper-focused on the **Sunk Cost Fallacy**—the most common reasoning error in project management and software development.
+Clearframe now utilizes **Election Logic** to detect the strongest signal among competing biases:
+
+* **T5 (Sunk Cost):** Removes past investment (time/money/effort) from the reasoning.
+* **T6 (Confirmation Bias):** Challenges the "proves I'm right" feedback loop.
+* **T7 (Recency Bias):** Mitigates the weight of "breaking news" or "latest posts."
 
 ### The ClearframeReframe™ Move
 When a bias is detected, the engine doesn't tell the user "you are wrong." Instead, it generates a **Counterfactual Frame**:
 * **Constraint:** A single question under 25 words.
-* **Goal:** Remove past investment (time/money/effort) from the reasoning.
-* **Result:** A "Day Zero" perspective that allows for rational capital allocation.
+* **Goal:** A "Day Zero" perspective that allows for rational capital allocation.
 
 [Image of a cognitive bias flowchart showing the transition from sunk cost reasoning to a counterfactual decision point]
 
 ---
 
-## 🚀 Execution Loop & Artifact System
+## 🚀 Execution & Stabilization
 
-Clearframe features a robust execution loop that ensures every reasoning analysis is reproducible.
+Clearframe is now a fully-discoverable Python package.
 
-* **Ticket Path:** `clearframe/tickets/incoming/`
-* **Run Path:** `clearframe/tickets/runs/[timestamp]/`
-* **Artifacts:** Every run produces an `.execution.json` file containing:
-    * The raw input reasoning.
-    * The LLM's narrative analysis.
-    * The structured Counterfactual Question and Rationale.
+### Installation
+```powershell
+# Install in editable mode to enable constitutional testing
+pip install -e .
 
-### CLI Commands
-| Command | Action |
-| :--- | :--- |
-| `python -m clearframe.app.builder.cli run` | Processes all incoming tickets and runs the engine. |
-| `python -m clearframe.app.builder.cli replay` | Replays the most recent run with beautiful terminal formatting. |
+Command,Action
+python -m clearframe.app.builder.cli run,Processes all incoming tickets and runs the engine.
+python -m clearframe.app.builder.cli replay,Replays the most recent run with beautiful terminal formatting.
+pytest tests/test_constitution.py,Verifies the engine adheres to the Silence-First policy.
 
----
+📐 Design Philosophy: The Engineering Rules
+Contract Freeze: One canonical engine interface (analyze) prevents interface drift.
 
-## 📐 Design Philosophy: The Engineering Rules
+Defensive Ingestion: Handles malformed JSON and plain-text inputs without crashing.
 
-Clearframe is built under a set of "Senior-Grade" constraints to ensure long-term stability:
+Minimal Abstraction: Pure Python, zero complex frameworks.
 
-* **Minimal Abstraction:** We avoid complex frameworks. The code is pure Python, making the logic transparent and the boundaries modular.
-* **Scaffolding Before Automation:** The execution loop was perfected with "Mock" data before a single AI call was integrated.
-* **Zero-Hallucination Policy:** By using **Constrained Output (JSON Mode)**, we force the AI to adhere to our data schemas, preventing conversational "drift."
-* **Conservative Outputs:** If the engine cannot confidently identify a pattern, it remains silent rather than risking a false positive.
+Conservative Outputs: If the engine cannot confidently identify a pattern, it remains silent.
 
----
+📊 Roadmap & Current Status
+[x] v0.1.0 — Engine Stable: Deterministic loop and artifact logging.
 
-## 📊 Roadmap & Current Status
+[x] v0.1.1 — Intelligence Integrated: Gemini integration and Sunk Cost Reframer.
 
-- [x] **v0.1.0 — Engine Stable:** Deterministic loop, ticket system, and artifact logging.
-- [x] **v0.1.1 — Intelligence Integrated:** Gemini 2.5 Flash integration and Sunk Cost Reframer.
-- [ ] **v0.2.0 — Multi-Bias Support:** Integration of Confirmation Bias and Recency Bias gates.
-- [ ] **v0.3.0 — Evaluation Layer:** A system for humans to rate the quality of the Reframer's questions.
+[x] v0.2.2 — Stabilization & Multi-Bias: Weighted Election logic and Constitutional Testing.
 
----
+[ ] v0.3.0 — Evaluation Layer: A system for humans to rate the quality of the Reframer's questions.
 
-## 👨‍💻 Author
-**JGigglen**
-*Developing tools for safer, saner human-AI collaboration.*
+👨‍💻 Author
+JGigglen
+Developing tools for safer, saner human-AI collaboration.
 
----
-
-## ⚖️ License
+⚖️ License
 MIT License - See LICENSE for details.
-
