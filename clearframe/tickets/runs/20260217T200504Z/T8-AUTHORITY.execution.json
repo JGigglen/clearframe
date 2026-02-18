@@ -1,0 +1,4 @@
+{
+  "ticket": "Ticket(ticket_id='T8-AUTHORITY', title=\"The CEO's Directive\", body='The CEO and VP sent a strict directive to use this vendor. My manager says the director agrees because the boss says so. We have no choice.', bias_type='AUTHORITY_BIAS', signal_strength=1.0)",
+  "analysis": "EngineOutput(intervention_type='YES', bias_context='AUTHORITY_BIAS', counterfactual='How would you view this decision if you had zero prior investment?', rationale='MOCK: Logic appears circular.')"
+}

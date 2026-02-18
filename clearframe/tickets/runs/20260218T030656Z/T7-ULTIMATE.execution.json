@@ -1,0 +1,19 @@
+{
+  "ticket_id": "T7-ULTIMATE",
+  "status": "DRY_RUN",
+  "workspace_path": "C:\\Users\\Giggles\\Desktop\\clearframe\\clearframe\\tickets\\runs\\20260218T030656Z\\workspace",
+  "steps": [
+    {
+      "id": 1,
+      "description": "Engine Analysis (YES)",
+      "output": "MOCK: SUNK_COST detected.\n\n--- REFRAME ---\nQ: What if you ignored the SUNK_COST and looked at the long-term data?",
+      "status": "completed"
+    }
+  ],
+  "meta": {
+    "timestamp_utc": "2026-02-18T03:06:56.001585+00:00",
+    "python_version": "3.12.9 (tags/v3.12.9:fdb8142, Feb  4 2025, 15:27:58) [MSC v.1942 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.26100-SP0",
+    "simulated_failure": false
+  }
+}

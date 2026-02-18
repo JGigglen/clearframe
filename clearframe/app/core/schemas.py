@@ -1,36 +1,24 @@
-from enum import Enum
-from typing import Optional, List
-from pydantic import BaseModel, Field, ConfigDict
+from dataclasses import dataclass, field
+from typing import Optional, Dict, Any
 
-class Classification(str, Enum):
-    YES = "YES"
-    POSSIBLY = "POSSIBLY"
-    NO = "NO"
+@dataclass(frozen=True)
+class Ticket:
+    ticket_id: str
+    title: str
+    body: str
+    bias_type: str = "UNKNOWN"
+    signal_strength: float = 0.0
 
-class Intervention(str, Enum):
-    YES = "YES"
-    SOFT = "SOFT"
-    NO = "NO"
-
-class LLMSuggestion(BaseModel):
-    classification: Classification
-    rationale: str
-
-class DecisionExtract(BaseModel):
-    core_decision: str = Field(..., min_length=1)
-    past_investments: List[str] = Field(default_factory=list)
-    proposed_next_action: Optional[str] = None
-
-class Detection(BaseModel):
-    classification: Classification
-    reasoning: str
+@dataclass(frozen=True)
+class EngineOutput:
+    intervention_type: str  # YES, SOFT, NO
+    bias_context: str
     counterfactual: Optional[str] = None
-    llm_suggestion: Optional[LLMSuggestion] = None
-
-class EngineOutput(BaseModel):
-    model_config = ConfigDict(use_enum_values=True)
-
-    extract: Optional[DecisionExtract] = None
-    detection: Detection
-    intervention: Optional[Intervention] = None
-    intervention_text: Optional[str] = None
+    rationale: Optional[str] = None
+    
+@dataclass(frozen=True)
+class RunResult:
+    ticket_id: str
+    status: str
+    output: EngineOutput
+    metadata: Dict[str, Any] = field(default_factory=dict)
